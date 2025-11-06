@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: char-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: char-backend
+  template:
+    metadata:
+      labels:
+        app: char-backend
+    spec:
+      containers:
+      - name: backend
+        image: irshadahmed04/char-backend:v1
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: char-backend
+spec:
+  selector:
+    app: char-backend
+  ports:
+  - port: 5000
+    targetPort: 5000
+  type: ClusterIP
