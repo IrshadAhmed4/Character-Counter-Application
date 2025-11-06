@@ -38,3 +38,31 @@ Verify pods — kubectl get pods should show both char-backend and char-frontend
 Verify services — kubectl get svc should show char-frontend on 80:30007/TCP and char-backend on 5000/TCP.
 
 Open app — browse http://<EC2-PUBLIC-IP>:30007 to load UI and count characters via backend.
+
+ARCHITECTURE:
+
++--------------------+        (in-cluster DNS)       +--------------------+
+|  Frontend Pod      |  --->  http://char-backend    |  Backend Pod       |
+|  NGINX + index.html|        :5000/count            |  Flask API (5000)  |
++---------+----------+                                 +---------+----------+
+          | NodePort 30007                                       ^
+          v                                                      |
+   http://<EC2-PUBLIC-IP>:30007                                  |
+                      (outside cluster)                          |
+                         Kubernetes Service Types:                |
+                         - Frontend: NodePort (external)         |
+                         - Backend : ClusterIP (internal only)   |
+
+REPO STRUCTURE:
+
+char-count/
+├── backend/
+│   ├── app.py               # Flask API
+│   └── Dockerfile           # Builds backend image
+├── frontend/
+│   ├── index.html           # UI (includes fetch to backend Service)
+│   └── Dockerfile           # Builds frontend image (NGINX)
+└── k8s/
+    ├── backend.yaml         # Deployment + Service (ClusterIP)
+    └── frontend.yaml        # Deployment + Service (NodePort)
+
