@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Character Counter</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    h2 {
+      color: #333;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      width: 70%;
+    }
+    button {
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #6a11cb, #2575fc);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>✨ Character Counter</h2>
+    <input type="text" id="name" placeholder="Enter your text..." />
+    <button onclick="sendData()">Count</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    async function sendData() {
+      const name = document.getElementById("name").value.trim();
+      const result = document.getElementById("result");
+      result.innerText = "";
+
+      if (!name) {
+        result.innerText = "⚠️ Please enter some text.";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://char-backend.default.svc.cluster.local:5000/count", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name })
+        });
+        const data = await response.json();
+        result.innerText = `Character Count: ${data.count}`;
+      } catch (err) {
+        result.innerText = `❌ Failed: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
