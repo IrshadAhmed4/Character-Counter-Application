@@ -1,13 +1,12 @@
-name: CI/CD Pipeline - Character Counter App
+name: Build and Push Docker Images
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
 
 jobs:
-  build-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,24 +22,20 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker Image
+      # --- FRONTEND IMAGE ---
+      - name: Build and Push Frontend
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/character-counter:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/character-counter-frontend:latest
 
-      - name: Set up Kubectl
-        uses: azure/setup-kubectl@v4
+      # --- BACKEND IMAGE ---
+      - name: Build and Push Backend
+        uses: docker/build-push-action@v5
         with:
-          version: 'latest'
-
-      - name: Configure Kubernetes credentials
-        run: |
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > ~/.kube/config
-
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
-          kubectl rollout status deployment/character-counter-deployment
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/character-counter-backend:latest
